@@ -1,0 +1,268 @@
+--EXTRACT DATA FROM CSVs VIA BULK INSERT
+
+BULK INSERT Customers
+FROM 'D:\trainsql\logictis\customers.csv'
+WITH (
+    FORMAT = 'CSV',             
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '0x0a',      
+    TABLOCK                     
+);
+
+BULK INSERT DRIVERS
+FROM 'D:\trainsql\logictis\drivers.csv'
+WITH (
+    FORMAT = 'CSV',             
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '0x0a',      
+    TABLOCK                     
+);
+
+BULK INSERT Facilities
+FROM 'D:\trainsql\logictis\facilities.csv'
+WITH (
+    FORMAT = 'CSV',             
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '0x0a',      
+    TABLOCK                     
+);
+
+BULK INSERT Routes
+FROM 'D:\trainsql\logictis\routes.csv'
+WITH (
+    FORMAT = 'CSV',             
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '0x0a',      
+    TABLOCK                     
+);
+
+BULK INSERT Trailers
+FROM 'D:\trainsql\logictis\trailers.csv'
+WITH (
+    FORMAT = 'CSV',             
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '0x0a',      
+    TABLOCK                     
+);
+
+BULK INSERT Trucks
+FROM 'D:\trainsql\logictis\trucks.csv'
+WITH (
+    FORMAT = 'CSV',             
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '0x0a',      
+    TABLOCK                     
+);
+
+BULK INSERT Loads
+FROM 'D:\trainsql\logictis\loads.csv'
+WITH (
+    FORMAT = 'CSV',             
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '0x0a',      
+    TABLOCK                     
+);
+
+BULK INSERT Trips
+FROM 'D:\trainsql\logictis\trips.csv'
+WITH (
+    FORMAT = 'CSV',             
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '0x0a',      
+    TABLOCK                     
+);
+
+DROP TABLE IF EXISTS #Staging_DeliveryEvents;
+
+-- 1. جدول staging 
+CREATE TABLE #Staging_DeliveryEvents (
+    event_id VARCHAR(20) PRIMARY KEY,
+    load_id VARCHAR(20) NOT NULL,
+    trip_id VARCHAR(20) NOT NULL,
+    event_type VARCHAR(50) NOT NULL,
+    facility_id VARCHAR(20),
+    scheduled_datetime DATETIME NOT NULL,
+    actual_datetime DATETIME NOT NULL,
+    detention_minutes INT,
+    on_time_flag VARCHAR(10) NOT NULL,
+    location_city VARCHAR(50),
+    location_state VARCHAR(50)
+);
+
+-- 2. تحميل CSV
+BULK INSERT #Staging_DeliveryEvents
+FROM 'D:\trainsql\logictis\delivery_events.csv'
+WITH (
+    FORMAT = 'CSV', 
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '0x0a'
+);
+
+
+INSERT INTO DeliveryEvents (
+    event_id,
+    load_id,
+    trip_id,
+    event_type,
+    facility_id,
+    scheduled_datetime,
+    actual_datetime,
+    detention_minutes,
+    on_time_flag,
+    location_city,    
+    location_state     
+)
+SELECT 
+    event_id,
+    load_id,
+    trip_id,
+    event_type,
+    facility_id,
+    scheduled_datetime,
+    actual_datetime,
+    detention_minutes,
+    CASE 
+        WHEN on_time_flag = 'true' THEN 1
+        WHEN on_time_flag = 'false' THEN 0
+        ELSE Null 
+    END,
+    location_city,    
+    location_state     
+FROM #Staging_DeliveryEvents;
+
+
+BULK INSERT FuelPurchases
+FROM 'D:\trainsql\logictis\fuel_purchases.csv'
+WITH (
+    FORMAT = 'CSV',             
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '0x0a',      
+    TABLOCK                     
+);
+
+BULK INSERT MaintenanceRecords
+FROM 'D:\trainsql\logictis\maintenance_records.csv'
+WITH (
+    FORMAT = 'CSV',             
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '0x0a',      
+    TABLOCK                     
+);
+
+
+
+CREATE TABLE #STAGINGSAFTEY(
+incident_id VARCHAR(20) PRIMARY KEY,
+    trip_id VARCHAR(20),
+    truck_id VARCHAR(20),
+    driver_id VARCHAR(20),
+    incident_date DATE,
+    incident_type VARCHAR(50),
+    location_city VARCHAR(50),
+    location_state VARCHAR(50),
+    at_fault_flag VARCHAR(10),
+    injury_flag VARCHAR(10),
+    vehicle_damage_cost DECIMAL(12,2),
+    cargo_damage_cost DECIMAL(12,2),
+    claim_amount DECIMAL(12,2),
+    preventable_flag VARCHAR(10),
+    description VARCHAR(255)
+    );
+    BULK INSERT #STAGINGSAFTEY 
+    FROM 'D:\trainsql\logictis\safety_incidents.csv'
+    WITH (
+    FORMAT = 'CSV',             
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '0x0a',      
+    TABLOCK                     
+    );
+
+    INSERT INTO SafetyIncidents (
+    incident_id ,
+    trip_id ,
+    truck_id,
+    driver_id ,
+    incident_date ,
+    incident_type ,
+    location_city ,
+    location_state ,
+    at_fault_flag ,
+    injury_flag ,
+    vehicle_damage_cost,
+    cargo_damage_cost ,
+    claim_amount ,
+    preventable_flag ,
+    description
+    )
+    SELECT 
+    incident_id,
+    trip_id ,
+    truck_id,
+    driver_id ,
+    incident_date ,
+    incident_type ,
+    location_city ,
+    location_state ,
+    CASE
+    WHEN at_fault_flag='True' then 1
+    WHEN at_fault_flag='False' then 0
+    else null
+    END, 
+    CASE
+    WHEN injury_flag='True' then 1
+    WHEN injury_flag='False' then 0
+    else null
+    END,
+    vehicle_damage_cost,
+    cargo_damage_cost ,
+    claim_amount , 
+    CASE
+    WHEN preventable_flag='True' then 1
+    WHEN preventable_flag='False' then 0
+    else null
+    END,
+    description
+    
+    FROM #STAGINGSAFTEY;
+
+    BULK INSERT DriverMonthlyMetrics 
+    FROM 'D:\trainsql\logictis\driver_monthly_metrics.csv'
+    WITH (
+    FORMAT = 'CSV',             
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '0x0a',      
+    TABLOCK                     
+    );
+
+    BULK INSERT DriverMonthlyMetrics 
+    FROM 'D:\trainsql\logictis\driver_monthly_metrics.csv'
+    WITH (
+    FORMAT = 'CSV',             
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '0x0a',      
+    TABLOCK                     
+    );
+
+    BULK INSERT TruckUtilizationMetrics 
+    FROM 'D:\trainsql\logictis\truck_utilization_metrics.csv'
+    WITH (
+    FORMAT = 'CSV',             
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '0x0a',      
+    TABLOCK                     
+    );
