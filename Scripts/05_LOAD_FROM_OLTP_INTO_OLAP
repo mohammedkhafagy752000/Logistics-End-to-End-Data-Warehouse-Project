@@ -1,0 +1,323 @@
+                       --LOAD FROM OLTP INTO OLAP--
+-- 1. DIM_DIVER
+INSERT INTO DIM_DRIVER(
+driver_id,
+f_name,
+l_name,
+hire_date,
+termination_date,
+license_number,
+date_of_birth,
+employment_status,
+cdl_class,
+years_experience)
+SELECT 
+driver_id,
+f_name,
+l_name,
+hire_date,
+termination_date,
+license_number,
+date_of_birth,
+employment_status,
+cdl_class,
+years_experience
+FROM Logistics_OLTP.dbo.DRIVERS;
+-- 2. DIM_TRUCKS
+INSERT INTO DIM_TRUCKS(truck_id ,
+    unit_number,
+    make,
+    model_year ,
+    vin ,
+    acquisition_date,
+    acquisition_mileage,
+    fuel_type,
+    tank_capacity_gallons ,
+    status,
+    home_terminal)
+  SELECT truck_id ,
+    unit_number,
+    make,
+    model_year ,
+    vin ,
+    acquisition_date,
+    acquisition_mileage,
+    fuel_type,
+    tank_capacity_gallons ,
+    status,
+    home_terminal
+    FROM Logistics_OLTP.dbo.Trucks;
+      --3. DIM_TRAILERS
+INSERT INTO DIM_TRAILERS(
+    trailer_id ,
+    trailer_number ,
+    trailer_type ,
+    length_feet ,
+    model_year ,
+    vin,
+    acquisition_date,
+    status ,
+    current_location)
+SELECT trailer_id ,
+    trailer_number ,
+    trailer_type ,
+    length_feet ,
+    model_year ,
+    vin,
+    acquisition_date,
+    status ,
+    current_location
+    FROM Logistics_OLTP.dbo.Trailers;
+    --4. DIM_FAILITIES
+    INSERT INTO DIM_FACILITIES(facility_id ,
+    facility_name ,
+    facility_type,
+    city ,
+    state,
+    latitude,
+    longitude ,
+    dock_doors ,
+    operating_hours)
+    SELECT facility_id ,
+    facility_name ,
+    facility_type,
+    city ,
+    state,
+    latitude,
+    longitude ,
+    dock_doors ,
+    operating_hours
+    FROM Logistics_OLTP.dbo.Facilities;
+    --5. Dim ROUTES
+    INSERT INTO DIM_ROUTES (
+    route_id ,
+    origin_city ,
+    origin_state ,
+    destination_city ,
+    destination_state ,
+    typical_distance_miles ,
+    base_rate_per_mile,
+    fuel_surcharge_rate ,
+    typical_transit_days )
+    SELECT route_id ,
+    origin_city ,
+    origin_state ,
+    destination_city ,
+    destination_state ,
+    typical_distance_miles ,
+    base_rate_per_mile,
+    fuel_surcharge_rate ,
+    typical_transit_days
+    FROM Logistics_OLTP.dbo.Routes
+
+    --6.DIM CUSTOMERS
+INSERT INTO DIM_CUSTOMERS (
+    customer_id ,
+    customer_name ,
+    customer_type ,
+    credit_terms_days ,
+    primary_freight_type ,
+    account_status,
+    contract_start_date ,
+    annual_revenue_potential )
+SELECT 
+ customer_id ,
+    customer_name ,
+    customer_type ,
+    credit_terms_days ,
+    primary_freight_type ,
+    account_status,
+    contract_start_date ,
+    annual_revenue_potential
+    FROM Logistics_OLTP.dbo.Customers;
+
+    INSERT INTO DIM_LOAD (
+    load_id ,
+    load_type ,
+    load_status ,
+    booking_type 
+)
+SELECT
+    load_id ,
+    load_type ,
+    load_status ,
+    booking_type 
+FROM Logistics_OLTP.dbo.Loads;
+
+--7. DIM_DATE
+DECLARE @STARTDATE DATE ='2020-01-01'; 
+DECLARE @ENDDATE DATE ='2030-12-31';
+
+WHILE @STARTDATE<=@ENDDATE
+BEGIN
+INSERT INTO DIM_DATE(
+    DateKey,       
+    FullDate,        
+    Year ,             
+    Quarter ,         
+    Month,           
+    MonthName ,         
+    Day ,              
+    DayName ,           
+    DayOfWeek ,        
+    IsWeekend 
+    )
+    SELECT CAST (FORMAT(@STARTDATE,'yyyyMMdd')AS INT),
+    @STARTDATE,
+    YEAR(@STARTDATE),
+    DATEPART(QUARTER,@STARTDATE),
+    MONTH (@STARTDATE),
+    DATENAME(MONTH,@STARTDATE),
+    DAY(@STARTDATE),
+    DATENAME(WEEKDAY,@STARTDATE),
+    DATEPART(WEEKDAY,@STARTDATE),
+    CASE WHEN DATENAME(WEEKDAY,@STARTDATE) IN ('Saturday', 'Sunday') THEN 1 ELSE 0 END
+    SET @STARTDATE = DATEADD(DAY, 1, @STARTDATE); 
+    END;
+    --8. FACT_TRIPS
+    INSERT INTO FACT_TRIPS (
+    Loadkey ,
+    Driverkey ,
+    Truckkey ,
+    Trailerkey ,
+    RoutesKey ,
+    Customerkey ,
+    Originfacilitykey ,
+    DestinationFacilityKey,
+    Datekey ,
+    trip_id ,
+    actual_distance_miles ,
+    actual_duration_hours ,
+    fuel_gallons_used ,
+    average_mpg ,
+    idle_time_hours ,
+    trip_status ,
+    weight_lbs ,
+    pieces ,
+    revenue ,
+    fuel_surcharge ,
+    accessorial_charges ,
+    detention_minutes ,
+    on_time_flag )
+    
+SELECT 
+    DL.LOADKEY ,
+    DD.DRIVERKEY ,
+    DT.TruckKey ,
+    DTR.TrailerKey,
+    DR.RoutesKey ,
+    DC.CustomerKey ,
+    DFO.FacilityKey ,
+    DFD.FacilityKey,
+    DDT.DateKey ,
+    T.trip_id ,
+    T.actual_distance_miles ,
+    T.actual_duration_hours ,
+    T.fuel_gallons_used ,
+    T. average_mpg ,
+    T.idle_time_hours ,
+    T.trip_status ,
+    L.weight_lbs ,
+    L.pieces ,
+    L.revenue ,
+    L.fuel_surcharge ,
+    L.accessorial_charges ,
+    DEL.TOTAL_detention_minutes ,
+    DEL.FINAL_ONTIME_FLAG
+    FROM Logistics_OLTP.dbo.Trips T
+    -- JOIN TO GET Driverkey ,Truckkey ,Trailerkey 
+    JOIN LOGISTIC_DWH.dbo.DIM_DRIVER DD ON T.driver_id= DD.driver_id AND DD.Is_Current=1
+    JOIN LOGISTIC_DWH.dbo.DIM_TRUCKS DT ON T.truck_id= DT.truck_id AND DT.Is_Current=1
+    JOIN LOGISTIC_DWH.dbo.DIM_TRAILERS DTR ON T.trailer_id= DTR.trailer_id AND DTR.Is_Current=1
+
+    -- JOIN TO GET weight_lbs ,pieces ,revenue, Loadkey,RoutesKey ,Customerkey
+    JOIN Logistics_OLTP.dbo.Loads L ON T.load_id =L.load_id
+    JOIN LOGISTIC_DWH.dbo.DIM_LOAD DL ON L.load_id =DL.load_id
+    JOIN LOGISTIC_DWH.dbo.DIM_ROUTES DR ON L.route_id=DR.route_id
+    JOIN LOGISTIC_DWH.dbo.DIM_CUSTOMERS DC  ON L.customer_id=DC.customer_id
+
+    --JOIN TO GET Originfacilitykey , DestinationFacilityKey
+    LEFT JOIN Logistics_OLTP.dbo.DeliveryEvents DEO ON T.trip_id=DEO.trip_id AND DEO.event_type='Pickup'
+    LEFT JOIN LOGISTIC_DWH.dbo.DIM_FACILITIES DFO ON DEO.facility_id= DFO.facility_id
+
+    LEFT JOIN Logistics_OLTP.dbo.DeliveryEvents DED ON T.trip_id=DED.trip_id AND DED.event_type='Delivery'
+    LEFT JOIN LOGISTIC_DWH.dbo.DIM_FACILITIES DFD ON DED.facility_id= DFD.facility_id
+
+    --JOIN TO GET detention_minutes , on_time_flag
+    LEFT JOIN (
+    SELECT trip_id,SUM(detention_minutes) AS TOTAL_detention_minutes, 
+    MIN (CAST(on_time_flag AS INT))AS FINAL_ONTIME_FLAG 
+    FROM Logistics_OLTP.dbo.DeliveryEvents 
+    GROUP BY trip_id) DEL ON T.trip_id=DEL.trip_id
+
+    -- JOIN TO GET DATE KEY
+    JOIN LOGISTIC_DWH.dbo.DIM_DATE DDT ON T.dispatch_date= DDT.FullDate;
+
+    -- 9. FACT MAINTENANCE
+    INSERT INTO FACT_MAINTENANCE(
+    TruckKey,      
+    DateKey,       
+    maintenance_id,  
+    maintenance_type, 
+    facility_location,
+    service_description, 
+    odometer_reading, 
+    labor_hours,       
+    labor_cost,       
+    parts_cost,       
+    total_cost,      
+    downtime_hours)
+    SELECT 
+    DT.TruckKey,      
+    DD.DateKey,       
+    maintenance_id,  
+    maintenance_type, 
+    facility_location,
+    service_description, 
+    odometer_reading, 
+    labor_hours,       
+    labor_cost,       
+    parts_cost,       
+    total_cost,      
+    downtime_hours 
+    FROM Logistics_OLTP.dbo.MaintenanceRecords MR
+    JOIN LOGISTIC_DWH.dbo.DIM_TRUCKS DT ON MR.truck_id=DT.truck_id AND DT.Is_Current=1
+    JOIN LOGISTIC_DWH.dbo.DIM_DATE DD ON MR.maintenance_date = DD.FullDate;
+
+    -- 10. FACT_INCIDENTS
+    INSERT INTO FACT_INCIDENTS (
+    Truckkey,
+    Tripkey,
+    Driverkey,
+    Datekey,
+    incident_id,
+    incident_type,
+    location_city,
+    location_state,
+    at_fault_flag,
+    injury_flag ,
+    vehicle_damage_cost,
+    cargo_damage_cost,
+    claim_amount,
+    preventable_flag,
+    description)
+    SELECT
+    DT.TruckKey,
+    FT.Tripkey,
+    FT.Driverkey,
+    DD.DateKey,
+    incident_id,
+    incident_type,
+    location_city,
+    location_state,
+    at_fault_flag,
+    injury_flag ,
+    vehicle_damage_cost,
+    cargo_damage_cost,
+    claim_amount,
+    preventable_flag,
+    description
+    FROM Logistics_OLTP.dbo.SafetyIncidents SI
+    JOIN LOGISTIC_DWH.dbo.DIM_TRUCKS DT ON SI.truck_id = DT.truck_id AND DT.Is_Current=1
+    LEFT JOIN LOGISTIC_DWH.dbo.FACT_TRIPS FT ON  SI.trip_id=FT.trip_id
+    JOIN LOGISTIC_DWH.dbo.DIM_DATE DD ON SI.incident_date=DD.FullDate;
