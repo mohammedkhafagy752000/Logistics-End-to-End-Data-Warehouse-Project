@@ -1,0 +1,10 @@
+﻿INC00000001,TRIP00036079,TRK00006,DRV00006,2023-04-09,Moving Violation,Columbus,PA,1,0,12629.26,0.00,12629.26,1,Severe incident involving equipment
+INC00000002,TRIP00032462,TRK00084,DRV00006,2023-02-19,Moving Violation,Columbus,NC,0,0,2700.70,14284.24,16984.94,0,Severe incident involving weather
+INC00000003,TRIP00067583,TRK00106,DRV00119,2024-05-20,Customer Complaint,Seattle,OK,1,0,24302.32,0.00,24302.32,1,Minor incident involving traffic
+INC00000004,TRIP00049128,TRK00085,DRV00134,2023-09-26,Equipment Damage,Kansas City,TN,1,0,4879.13,0.00,4879.13,1,Moderate incident involving equipment
+INC00000005,TRIP00062884,TRK00014,DRV00133,2024-03-20,DOT Violation,Las Vegas,IN,0,0,14951.40,0.00,14951.40,0,Minor incident involving other driver
+INC00000006,TRIP00004361,TRK00007,DRV00005,2022-02-27,Equipment Damage,Oklahoma City,CO,0,1,0.00,0.00,0.00,0,Minor incident involving weather
+INC00000007,TRIP00012773,TRK00007,DRV00109,2022-06-13,DOT Violation,Portland,TX,1,0,12589.05,28315.16,40904.21,1,Moderate incident involving traffic
+INC00000008,TRIP00072329,TRK00115,DRV00060,2024-07-17,Accident,Phoenix,TX,0,0,15572.01,0.00,15572.01,0,Moderate incident involving equipment
+INC00000009,TRIP00043143,TRK00107,DRV00003,2023-07-08,Customer Complaint,Oklahoma City,TX,0,1,22283.17,379.10,22662.27,0,Moderate incident involving traffic
+INC00000010,TRIP00068700,TRK00074,DRV00132,2024-06-03,Equipment Damage,Detroit,PA,0,0,0.00,33901.90,33901.90,0,Severe incident involving equipment
