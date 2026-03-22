@@ -1,0 +1,229 @@
+CREATE DATABASE LOGISTIC_DWH;
+USE LOGISTIC_DWH;
+-----------CREATE DIMENSION TABLES-------------
+               --DIM DRIVER--
+CREATE TABLE DIM_DRIVER (
+    DRIVERKEY INT IDENTITY(1,1) PRIMARY KEY,
+    driver_id VARCHAR(20),
+    f_name VARCHAR(50),
+    l_name VARCHAR(50),
+    hire_date DATE,
+    termination_date DATE,
+    license_number VARCHAR(10),
+    date_of_birth DATE,
+    employment_status VARCHAR(20),
+    cdl_class VARCHAR(3),
+    years_experience INT,
+    Row_Effective_Date DATE DEFAULT GETDATE(),
+    Row_Expiration_Date DATE DEFAULT '9999-12-31',
+    Is_Current BIT DEFAULT 1
+);
+                --DIM TRUCK--
+    CREATE TABLE DIM_TRUCKS (
+    TruckKey INT IDENTITY(1,1) PRIMARY KEY,
+    truck_id VARCHAR(20) ,
+    unit_number VARCHAR(50) NOT NULL,
+    make VARCHAR(50) NOT NULL,
+    model_year INT,
+    vin VARCHAR(50)  NOT NULL,
+    acquisition_date DATE NOT NULL,
+    acquisition_mileage INT,
+    fuel_type VARCHAR(20),
+    tank_capacity_gallons DECIMAL(6,2),
+    status VARCHAR(20),
+    home_terminal VARCHAR(100),
+    Row_Effective_Date DATE DEFAULT GETDATE(),
+    Row_Expiration_Date DATE DEFAULT '9999-12-31',
+    Is_Current BIT DEFAULT 1
+);
+  
+  -- DIM TRAILERS
+CREATE TABLE DIM_TRAILERS (
+    TrailerKey  INT IDENTITY(1,1) PRIMARY KEY,
+    trailer_id VARCHAR(20) ,
+    trailer_number VARCHAR(50) NOT NULL,
+    trailer_type VARCHAR(50),
+    length_feet DECIMAL(5,2),
+    model_year INT,
+    vin VARCHAR(50)  NOT NULL,
+    acquisition_date DATE NOT NULL,
+    status VARCHAR(20),
+    current_location VARCHAR(100),
+    Row_Effective_Date DATE DEFAULT GETDATE(),
+    Row_Expiration_Date DATE DEFAULT '9999-12-31',
+    Is_Current BIT DEFAULT 1
+);
+
+            ---- DIM FACILITIES----
+    CREATE TABLE DIM_FACILITIES(
+    FacilityKey INT IDENTITY(1,1) PRIMARY KEY,
+    facility_id VARCHAR(20) ,
+    facility_name VARCHAR(100) NOT NULL,
+    facility_type VARCHAR(50),
+    city VARCHAR(50),
+    state VARCHAR(50),
+    latitude DECIMAL(9,6),
+    longitude DECIMAL(9,6),
+    dock_doors INT,
+    operating_hours VARCHAR(50),
+    Row_Effective_Date DATE DEFAULT GETDATE(),
+    Row_Expiration_Date DATE DEFAULT '9999-12-31',
+    Is_Current BIT DEFAULT 1
+        );
+
+        --Dim ROUTES
+    CREATE TABLE DIM_ROUTES (
+    RoutesKey INT IDENTITY(1,1) PRIMARY KEY,
+    route_id VARCHAR(20),
+    origin_city VARCHAR(50),
+    origin_state VARCHAR(50),
+    destination_city VARCHAR(50),
+    destination_state VARCHAR(50),
+    typical_distance_miles DECIMAL(10,2),
+    base_rate_per_mile DECIMAL(10,2),
+    fuel_surcharge_rate DECIMAL(5,2),
+    typical_transit_days INT,
+    Row_Effective_Date DATE DEFAULT GETDATE(),
+    Row_Expiration_Date DATE DEFAULT '9999-12-31',
+    Is_Current BIT DEFAULT 1
+);
+
+
+-- DIM CUSTOMERS
+CREATE TABLE DIM_CUSTOMERS (
+    CustomerKey INT IDENTITY(1,1) PRIMARY KEY,
+    customer_id VARCHAR(20) ,
+    customer_name VARCHAR(100) NOT NULL,
+    customer_type VARCHAR(50),
+    credit_terms_days INT,
+    primary_freight_type VARCHAR(50),
+    account_status VARCHAR(20),
+    contract_start_date DATE,
+    annual_revenue_potential DECIMAL(18,2),
+    Row_Effective_Date DATE DEFAULT GETDATE(),
+    Row_Expiration_Date DATE DEFAULT '9999-12-31',
+    Is_Current BIT DEFAULT 1
+);
+CREATE TABLE DIM_LOAD
+(
+    LOADKEY INT IDENTITY(1,1) PRIMARY KEY,
+    load_id VARCHAR(20) ,
+    load_type VARCHAR(50),
+    load_status VARCHAR(20),
+    booking_type VARCHAR(50),
+    Row_Effective_Date DATE DEFAULT GETDATE(),
+    Row_Expiration_Date DATE DEFAULT '9999-12-31',
+    Is_Current BIT DEFAULT 1
+);
+
+         -- DIM DATE--
+         CREATE TABLE DIM_DATE (
+    DateKey INT  PRIMARY KEY,       
+    FullDate DATE NOT NULL,        
+    Year INT NOT NULL,             
+    Quarter INT NOT NULL,         
+    Month INT NOT NULL,           
+    MonthName VARCHAR(20),         
+    Day INT NOT NULL,              
+    DayName VARCHAR(20),           
+    DayOfWeek INT NOT NULL,        
+    IsWeekend BIT DEFAULT 0        
+);
+
+       ------------CREATE FACT TABLES---------
+CREATE  TABLE FACT_TRIPS (
+    Tripkey INT IDENTITY(1,1) PRIMARY KEY,
+    Loadkey INT NOT NULL,
+    Driverkey INT NOT NULL,
+    Truckkey INT NOT NULL,
+    Trailerkey INT NOT NULL,
+    RoutesKey INT NOT NULL,
+    Customerkey INT NOT NULL,
+    Originfacilitykey INT NOT NULL,
+    DestinationFacilityKey  INT NOT NULL,
+    Datekey INT NOT NULL,
+    trip_id VARCHAR(20),
+    actual_distance_miles DECIMAL(10,2),
+    actual_duration_hours DECIMAL(10,2),
+    fuel_gallons_used DECIMAL(10,2),
+    average_mpg DECIMAL(5,2),
+    idle_time_hours DECIMAL(5,2),
+    trip_status VARCHAR(20),
+    weight_lbs DECIMAL(12,2),
+    pieces INT,
+    revenue DECIMAL(12,2),
+    fuel_surcharge DECIMAL(10,2),
+    accessorial_charges DECIMAL(10,2),
+    detention_minutes INT,
+    on_time_flag BIT,
+    FOREIGN KEY (Loadkey)                REFERENCES DIM_LOAD(LOADKEY),
+    FOREIGN KEY (Driverkey)              REFERENCES DIM_DRIVER(DRIVERKEY),
+    FOREIGN KEY (Truckkey)               REFERENCES DIM_TRUCKS(TruckKey),
+    FOREIGN KEY (Trailerkey)             REFERENCES DIM_TRAILERS(TrailerKey),
+    FOREIGN KEY (RoutesKey)              REFERENCES DIM_ROUTES(RoutesKey),
+    FOREIGN KEY (Customerkey)            REFERENCES DIM_CUSTOMERS(Customerkey),
+    FOREIGN KEY (Originfacilitykey)      REFERENCES DIM_FACILITIES(Facilitykey), 
+    FOREIGN KEY (DestinationFacilityKey) REFERENCES DIM_FACILITIES(Facilitykey), 
+    FOREIGN KEY (Datekey)                REFERENCES DIM_DATE(DateKey)
+    );
+
+    -----------FACT_MAINTENANCE  ---------
+    CREATE TABLE FACT_MAINTENANCE (
+    MaintenanceKey INT IDENTITY(1,1) PRIMARY KEY,
+    TruckKey INT NOT NULL,      
+    DateKey INT NOT NULL,       
+    maintenance_id VARCHAR(20),  
+    maintenance_type VARCHAR(50), 
+    facility_location varchar (50),
+    service_description VARCHAR(255), 
+    odometer_reading DECIMAL(10,2), 
+    labor_hours DECIMAL(5,2),       
+    labor_cost DECIMAL(12,2),       
+    parts_cost DECIMAL(12,2),       
+    total_cost DECIMAL(12,2),      
+    downtime_hours DECIMAL(5,2),    
+    FOREIGN KEY (TruckKey) REFERENCES DIM_TRUCKS(TruckKey),
+    FOREIGN KEY (DateKey) REFERENCES DIM_DATE(DateKey)
+);
+
+ -----------FACT_INCIDENTS---------
+    CREATE TABLE FACT_INCIDENTS (
+    Incidentkey INT IDENTITY (1,1) PRIMARY KEY,
+    Truckkey INT NOT NULL,
+    Tripkey INT NOT NULL,
+    Driverkey INT NOT NULL,
+    Datekey INT NOT NULL,
+    incident_id VARCHAR(20),
+    incident_type VARCHAR(50),
+    location_city VARCHAR(50),
+    location_state VARCHAR(50),
+    at_fault_flag BIT,
+    injury_flag BIT,
+    vehicle_damage_cost DECIMAL(12,2),
+    cargo_damage_cost DECIMAL(12,2),
+    claim_amount DECIMAL(12,2),
+    preventable_flag BIT,
+    description VARCHAR(255),
+    FOREIGN KEY (Tripkey)  REFERENCES FACT_TRIPS(Tripkey),
+    FOREIGN KEY (Truckkey) REFERENCES DIM_TRUCKS(Truckkey),
+    FOREIGN KEY (Driverkey)REFERENCES DIM_DRIVER(Driverkey),
+    FOREIGN KEY (Datekey)  REFERENCES DIM_DATE(Datekey));
+
+     -----------FACT_FUELPURCHASES---------
+    CREATE TABLE FACT_FUELPURCHASES (
+    Fuelkey INT IDENTITY (1,1) PRIMARY KEY,
+    Truckkey INT NOT NULL,
+    Tripkey INT NOT NULL,
+    Driverkey INT NOT NULL,
+    Datekey INT NOT NULL,
+    fuel_purchase_id VARCHAR(20) ,
+    location_city VARCHAR(50),
+    location_state VARCHAR(50),
+    gallons DECIMAL(10,2),
+    price_per_gallon DECIMAL(10,2),
+    total_cost DECIMAL(12,2),
+    fuel_card_number VARCHAR(50),
+    FOREIGN KEY (Tripkey)  REFERENCES FACT_TRIPS(Tripkey),
+    FOREIGN KEY (Truckkey) REFERENCES DIM_TRUCKS(Truckkey),
+    FOREIGN KEY (Driverkey)REFERENCES DIM_DRIVER(Driverkey),
+    FOREIGN KEY (Datekey)  REFERENCES DIM_DATE(Datekey));
