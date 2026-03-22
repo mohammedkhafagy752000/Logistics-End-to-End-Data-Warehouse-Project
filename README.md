@@ -110,22 +110,6 @@ Core transformation layer includes:
 ├── Schema/
 └── README.md
 ```
-## 📂 Repository Structure
-
-```
-.
-├── scripts/
-│   ├── 01_OLTP_Database/
-│   ├── 02_Extract_From_CSV/
-│   ├── 03_Data_Cleaning_Validation/
-│   ├── 04_DWH_Architecture/
-│   └── 05_LOAD_FROM_OLTP_INTO_OLAP/
-│
-├── Sample_Data/
-├── Schema/
-└── README.md
-```
-
 
 ---
 
