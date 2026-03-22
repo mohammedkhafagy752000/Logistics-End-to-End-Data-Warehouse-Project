@@ -1,0 +1,149 @@
+-Data Validation & Cleaning
+-------Trip table---------
+--check 
+SELECT  * 
+from Trips t
+left join DRIVERS D
+ON T.driver_id = D.driver_id
+where D.driver_id IS NULL;    --INVALID # NULL VALUE FOR  SOME DRIVERS
+
+-- SOLUATION ADD Dummy Driver
+INSERT INTO DRIVERS (driver_id, f_name, l_name, hire_date, employment_status)
+VALUES ('DRV_UNKNOWN', 'Unknown', 'Driver', '2000-01-01', 'Unknown');
+UPDATE Trips 
+SET driver_id ='DRV_UNKNOWN'
+WHERE driver_id IS NULL;  
+
+UPDATE FuelPurchases
+SET driver_id = 'DRV_UNKNOWN'
+WHERE driver_id IS NULL;
+
+UPDATE SafetyIncidents
+SET driver_id = 'DRV_UNKNOWN'
+WHERE driver_id IS NULL;
+-- Problem solved
+
+--check 
+SELECT *
+from Trips t
+left join Trucks TR
+ON T.truck_id =TR.truck_id
+where TR.truck_id IS NULL;   --INVALID
+
+-- SOLUATION ADD Dummy truck
+INSERT INTO Trucks(truck_id,unit_number,make,vin,acquisition_date)
+VALUES ('TR_UNKNOWN','UNK-000', 'Unknown','UNKNOWN-VIN', '2000-01-01');
+UPDATE Trips 
+SET truck_id ='TR_UNKNOWN'
+WHERE truck_id IS NULL;  
+
+UPDATE FuelPurchases
+SET truck_id ='TR_UNKNOWN'
+WHERE truck_id IS NULL;  
+
+UPDATE SafetyIncidents
+SET truck_id ='TR_UNKNOWN'
+WHERE truck_id IS NULL; 
+
+UPDATE MaintenanceRecords
+SET truck_id ='TR_UNKNOWN'
+WHERE truck_id IS NULL; 
+
+-- Problem solved
+
+
+--check 
+SELECT *
+from Trips t
+left join Trailers TRA
+ON T.trailer_id =TRA.trailer_id
+where TRA.trailer_id IS NULL;
+-- SOLUATION ADD Dummy truck
+INSERT INTO Trailers(trailer_id,trailer_number,vin,acquisition_date)
+VALUES ('TRA_UNKNOWN','UNT-000','VIN-000','2000-01-01');
+UPDATE Trips 
+SET trailer_id ='TRA_UNKNOWN'
+WHERE trailer_id IS NULL;   
+ 
+-- Problem solved
+
+--check 
+SELECT *
+from Trips t
+left join Loads L
+ON T.load_id =L.load_id
+where L.load_id IS NULL; --VALID
+----------VALIDATION COMPLETED SUCCESFULU---------------
+-- CHECK TRIPS LOGIC VALUES
+SELECT DISTINCT trip_status from Trips;  -- valid
+select * from trips where 
+actual_duration_hours < 0  
+or actual_distance_miles <0
+or fuel_gallons_used <0 
+or average_mpg <0 
+or idle_time_hours<0 ;    -- valid
+ 
+ --check if the distance is outlier value by calculate speed 
+ select  trip_id ,actual_distance_miles,actual_duration_hours,(actual_distance_miles/Nullif(actual_duration_hours,0)) As average_speed
+ from Trips
+ where (actual_distance_miles/Nullif(actual_duration_hours,0))>80; --VALID
+ --CHECK
+ SELECT actual_distance_miles,fuel_gallons_used,average_mpg 
+ from Trips
+ where average_mpg != round((actual_distance_miles/ nullif(fuel_gallons_used,0)),2) and abs(average_mpg-round((actual_distance_miles/ nullif(fuel_gallons_used,0)),2))>0.1;  --valid
+ 
+ --check
+SELECT trip_id, COUNT(*)
+FROM Trips
+GROUP BY trip_id
+HAVING COUNT(*) > 1;  --valid
+
+-- check
+select * from Trips
+where actual_distance_miles=0
+and fuel_gallons_used>0;   --valid
+ -------Driver table---------
+ --CHECK
+ SELECT driver_id,hire_date,termination_date
+ FROM DRIVERS
+ WHERE hire_date>termination_date;  --VALID
+  --CHECK
+  SELECT driver_id,years_experience
+  FROM DRIVERS
+  WHERE years_experience<0;  --VALID
+
+  --CHECK
+  SELECT driver_id,f_name,l_name from DRIVERS
+  WHERE license_number IN (
+ SELECT license_number
+ FROM DRIVERS
+ group BY license_number
+ having count(*)>1
+ );    --valid
+
+ --CHECK 
+ SELECT driver_id,termination_date,employment_status
+ FROM DRIVERS
+ WHERE termination_date  IS NOT NULL AND employment_status='Active';  --VALID
+
+  --CHECK 
+ SELECT driver_id,termination_date,employment_status
+ FROM DRIVERS
+ WHERE termination_date  IS  NULL AND employment_status='Terminated';  --VALID
+ 
+ --CHECK
+ SELECT driver_id,date_of_birth
+FROM DRIVERS
+WHERE DATEDIFF(YEAR,date_of_birth,GETDATE()) < 18;  -- VALID
+
+ -------TRUCK table---------
+ -- CHECK
+ SELECT truck_id,acquisition_date
+ FROM Trucks
+ WHERE acquisition_date>GETDATE();
+
+ -------TRAILER table---------
+ -- CHECK
+ SELECT trailer_id,acquisition_date
+ FROM Trailers
+ WHERE acquisition_date>GETDATE();
