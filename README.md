@@ -105,6 +105,7 @@ Core transformation layer includes:
 │   ├── 03_Data_Cleaning_Validation/
 │   ├── 04_DWH_Architecture/
 │   └── 05_LOAD_FROM_OLTP_INTO_OLAP/
+│   └── 06_Analytical_Queries/
 │
 ├── Sample_Data/
 ├── Schema/
@@ -123,11 +124,68 @@ This system enables answering key business questions:
 
 ---
 
-## 🛠️ Tech Stack
+## 📊 Analytical Layer (Business Queries & Insights)
 
-- Microsoft SQL Server  
-- T-SQL  
-- Dimensional Modeling (Star Schema)  
+After building the Data Warehouse, I developed a set of **analytical SQL queries** to extract actionable business insights and simulate real-world decision-making scenarios.
+
+### 📌 Key Analysis Areas
+
+#### 🚚 Operational KPIs
+
+* Total number of trips
+* Total revenue
+* Total shipped pieces
+* Total weight transported
+
+---
+
+#### ⏱️ Driver Performance Analysis
+
+* Top 5 drivers based on **On-Time Delivery Rate**
+* Evaluation of driver performance trends using:
+
+  * `LAG` / `LEAD` functions
+* Identification of performance improvement or decline over time
+
+---
+
+#### ⛽ Fuel Efficiency & Cost Analysis
+
+* Detection of **least fuel-efficient routes (low MPG)**
+* Comparison of driver fuel performance against state averages
+* Identification of high fuel consumption patterns
+
+---
+
+#### 🛠️ Maintenance & Risk Analysis
+
+* Correlation between **maintenance cost and incident frequency**
+* Detection of trucks requiring frequent maintenance within short periods
+* Cumulative maintenance cost tracking using window functions
+
+---
+
+#### 🌍 Regional Performance Insights
+
+* Revenue and trip distribution across states
+* Top-performing drivers per state using:
+
+  * `DENSE_RANK()`
+* Identification of high-performing regions
+
+---
+
+#### 🧠 Advanced SQL Techniques Used
+
+* Window Functions (`LAG`, `LEAD`, `SUM OVER`)
+* Ranking Functions (`ROW_NUMBER`, `RANK`, `DENSE_RANK`)
+* CTEs (Common Table Expressions)
+* PIVOT for quarterly revenue analysis
+* Subqueries & Aggregations
+
+---
+
+💡 These queries represent the transition from **Data Engineering → Data Analysis**, where raw data is transformed into **business insights that support decision-making**.
 
 ---
 
