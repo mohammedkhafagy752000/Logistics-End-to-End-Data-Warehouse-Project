@@ -194,6 +194,112 @@ After building the Data Warehouse, I developed a set of **analytical SQL queries
 
 ---
 
-## 🚀 Next Step
+---
 
-Building interactive dashboards using **Power BI** to visualize insights and support decision-making.
+## 🧠 Key Business Insights (Data Storytelling)
+
+After performing the analytical queries and building dashboards, several critical insights were identified:
+
+---
+
+### ⚠️ 1. Operational Reliability Issue
+
+* On-Time Delivery Rate = **29.8%**
+* Significantly below expected industry standards
+
+💡 Insight:
+Despite stable financial performance, the company suffers from a **major operational reliability problem**, directly impacting customer satisfaction.
+
+---
+
+### 📉 2. Efficiency Decline 
+
+* Total trips increased
+* Average revenue per trip decreased
+
+💡 Insight:
+The company is **handling more operations but generating less value per trip**, indicating inefficiencies in pricing, routing, or trip utilization.
+
+---
+
+### ⏱️ 3. High Detention Time (Root Cause Indicator)
+
+* Average detention time ≈ **183 minutes per trip (~3 hours)**
+
+💡 Insight:
+This is a strong indicator behind delivery delays, possibly caused by:
+
+* Warehouse inefficiencies
+* Loading/unloading delays
+* Poor route planning
+
+---
+
+### 💰 4. High Profitability vs Hidden Risk
+
+* Profit growth > Revenue growth
+* Profitability ratio (PPR) ≈ **67%**
+
+💡 Insight:
+Indicates strong cost control — but may also suggest:
+
+* Missing cost components
+* Or incomplete cost allocation
+
+---
+
+### 🚛 5. Fleet Utilization vs Performance
+
+* Volvo trucks are the most used
+
+💡 Insight:
+High usage does not necessarily mean best performance —
+further analysis is required to evaluate **efficiency vs utilization**.
+
+---
+
+### 🌍 6. Regional Revenue Concentration
+
+* Texas and Washington generate the highest revenue
+
+💡 Insight:
+Revenue concentration may be driven by **trip volume rather than profitability**, requiring deeper margin analysis per route.
+
+---
+
+### 🚨 7. Risk & Incident Analysis
+
+* 60 incidents → $840K+ in damages
+* Mix of accidents and compliance violations
+
+💡 Insight:
+Indicates operational risk requiring:
+
+* Driver training
+* Stronger compliance and monitoring systems
+
+---
+
+## 🎯 Final Conclusion
+
+This analysis reveals a realistic business scenario:
+
+✔️ Financial performance is stable
+✔️ Operational efficiency is improving
+
+❗ However:
+The company is facing a **critical gap in service reliability**
+
+---
+
+💡 Key Takeaway:
+
+> This is not a revenue problem —
+> it is an **operational efficiency and reliability problem**
+
+---
+
+🚀 This section demonstrates the transition from:
+**Data → Information → Insight → Decision**
+
+---
