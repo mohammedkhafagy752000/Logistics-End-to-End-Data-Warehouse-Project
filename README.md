@@ -108,6 +108,11 @@ Core transformation layer includes:
 │   └── 06_Analytical_Queries/
 │
 ├── Sample_Data/
+├── Logistics_Dashboard_&_Analysis/
+|   ├── LOGISTIC DASHBOARD.png
+|   ├── DRIVERS &TRUCKS DASHBOARD.png
+|   ├── TRIPS DASHBOARD.png
+|   ├── Logistics_Dashboard EXCEL FILE
 ├── Schema/
 └── README.md
 ```
